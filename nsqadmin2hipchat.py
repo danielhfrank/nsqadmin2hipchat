@@ -41,10 +41,10 @@ def text_from_nsq_body(body):
 def process_message(message, args):
     msg_txt = text_from_nsq_body(message.body)
     if args.verbose:
-        logging.info(msg_txt)
+        logging.warn(msg_txt)
     response = post_to_hipchat(msg_txt, args)
     if args.verbose:
-        logging.info(response.read())
+        logging.warn(response.read())
     return True
 
 
