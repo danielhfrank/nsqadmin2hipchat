@@ -62,5 +62,5 @@ if __name__ == '__main__':
     if args.nsqlookupd_http_address:
         kwargs['lookupd_http_addresses'] = args.nsqlookupd_http_address
     else:
-        pass # TODO add the direct address. we know either tcp or lookupd must be supplied
+        kwargs['nsqd_tcp_addresses'] = args.nsqd_tcp_address
     r = nsq.Reader(tasks, **kwargs)
