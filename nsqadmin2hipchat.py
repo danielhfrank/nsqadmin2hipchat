@@ -17,7 +17,7 @@ def post_to_hipchat(txt, args):
         'message' : txt
     }
     url = "https://api.hipchat.com/v1/rooms/message"
-    urllib.urlopen(url + urllib.urlencode(params))
+    return urllib.urlopen(url + '?' + urllib.urlencode(params))
 
 action_text_map = {
     'create_topic' : 'Created',
@@ -28,19 +28,23 @@ action_text_map = {
     'pause_channel' : 'Paused',
     'unpause_channel' : 'Unpaused'
 }
-def text_from_nsq_body(body, args):
+def text_from_nsq_body(body):
     try:
         event = json.loads(body)
         topic_txt = 'topic %s' % event['topic']
         channel_txt = 'channel %s in ' % event['channel'] if event['channel'] else ''
-        return action_text_map['action'] + " " + channel_txt + topic_txt
+        return action_text_map[event['action']] + " " + channel_txt + topic_txt
     except ValueError:
         logging.exception("Invalid json from nsq")
 
 
 def process_message(message, args):
-    msg_txt = text_from_nsq_body(message, args)
-    post_to_hipchat(msg_txt, args)
+    msg_txt = text_from_nsq_body(message.body)
+    if args.verbose:
+        logging.info(msg_txt)
+    response = post_to_hipchat(msg_txt, args)
+    if args.verbose:
+        logging.info(response.read())
     return True
 
 
@@ -50,6 +54,7 @@ if __name__ == '__main__':
     parser.add_argument('--hipchat-room-id', required=True)
     parser.add_argument('--nsq-topic', required=True)
     parser.add_argument('--nsq-channel', default='nsqadmin2hipchat')
+    parser.add_argument('-v', '--verbose', action='store_true')
     sources = parser.add_mutually_exclusive_group(required=True)
     sources.add_argument('--nsqd-tcp-address', action='append')
     sources.add_argument('--nsqlookupd-http-address', action='append')
@@ -64,3 +69,4 @@ if __name__ == '__main__':
     else:
         kwargs['nsqd_tcp_addresses'] = args.nsqd_tcp_address
     r = nsq.Reader(tasks, **kwargs)
+    nsq.run()
