@@ -7,10 +7,10 @@ import nsq
 import argparse
 import functools
 
-def post_to_hipchat(txt, args):
+def post_to_hipchat(txt, args, user):
     params = {
         'auth_token' : args.hipchat_auth_token,
-        'from' : 'NSQ Admin',
+        'from' : user or 'NSQ Admin',
         'color' : 'gray',
         'room_id' : args.hipchat_room_id,
         'message_format' : 'text',
@@ -33,16 +33,16 @@ def text_from_nsq_body(body):
         event = json.loads(body)
         topic_txt = 'topic %s' % event['topic']
         channel_txt = 'channel %s in ' % event['channel'] if event['channel'] else ''
-        return action_text_map[event['action']] + " " + channel_txt + topic_txt
+        return action_text_map[event['action']] + " " + channel_txt + topic_txt, event['user']
     except ValueError:
         logging.exception("Invalid json from nsq")
 
 
 def process_message(message, args):
-    msg_txt = text_from_nsq_body(message.body)
+    msg_txt, user = text_from_nsq_body(message.body)
     if args.verbose:
         logging.warn(msg_txt)
-    response = post_to_hipchat(msg_txt, args)
+    response = post_to_hipchat(msg_txt, args, user)
     if args.verbose:
         logging.warn(response.read())
     return True
