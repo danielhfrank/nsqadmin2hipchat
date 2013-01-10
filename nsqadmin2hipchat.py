@@ -57,15 +57,15 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--verbose', action='store_true')
     sources = parser.add_mutually_exclusive_group(required=True)
     sources.add_argument('--nsqd-tcp-address', action='append')
-    sources.add_argument('--nsqlookupd-http-address', action='append')
+    sources.add_argument('--lookupd-http-address', action='append')
     args = parser.parse_args()
     tasks = {'post' : functools.partial(process_message, args=args)}
     kwargs = {
         'topic': args.nsq_topic,
         'channel': args.nsq_channel
     }
-    if args.nsqlookupd_http_address:
-        kwargs['lookupd_http_addresses'] = args.nsqlookupd_http_address
+    if args.lookupd_http_address:
+        kwargs['lookupd_http_addresses'] = args.lookupd_http_address
     else:
         kwargs['nsqd_tcp_addresses'] = args.nsqd_tcp_address
     r = nsq.Reader(tasks, **kwargs)
