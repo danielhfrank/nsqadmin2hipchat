@@ -11,10 +11,11 @@ def post_to_hipchat(txt, args, user):
     params = {
         'auth_token' : args.hipchat_auth_token,
         'from' : user or 'NSQ Admin',
-        'color' : 'gray',
+        'color' : args.color,
         'room_id' : args.hipchat_room_id,
         'message_format' : 'text',
-        'message' : txt
+        'message' : txt,
+        'notify' : int(args.notify)
     }
     url = "https://api.hipchat.com/v1/rooms/message"
     return urllib.urlopen(url + '?' + urllib.urlencode(params))
@@ -55,6 +56,8 @@ if __name__ == '__main__':
     parser.add_argument('--nsq-topic', required=True)
     parser.add_argument('--nsq-channel', default='nsqadmin2hipchat')
     parser.add_argument('-v', '--verbose', action='store_true')
+    parser.add_argument('--notify', action='store_true')
+    parser.add_argument('--color', default='gray', choices=["yellow", "red", "green", "purple", "gray", "random"])
     sources = parser.add_mutually_exclusive_group(required=True)
     sources.add_argument('--nsqd-tcp-address', action='append')
     sources.add_argument('--lookupd-http-address', action='append')
