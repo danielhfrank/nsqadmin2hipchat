@@ -59,14 +59,14 @@ if __name__ == '__main__':
     sources.add_argument('--nsqd-tcp-address', action='append')
     sources.add_argument('--lookupd-http-address', action='append')
     args = parser.parse_args()
-    tasks = {'post' : functools.partial(process_message, args=args)}
     kwargs = {
         'topic': args.nsq_topic,
-        'channel': args.nsq_channel
+        'channel': args.nsq_channel,
+        'message_handler' : functools.partial(process_message, args=args)
     }
     if args.lookupd_http_address:
         kwargs['lookupd_http_addresses'] = args.lookupd_http_address
     else:
         kwargs['nsqd_tcp_addresses'] = args.nsqd_tcp_address
-    r = nsq.Reader(tasks, **kwargs)
+    r = nsq.Reader(**kwargs)
     nsq.run()
