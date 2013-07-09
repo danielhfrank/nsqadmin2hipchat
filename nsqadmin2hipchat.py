@@ -65,7 +65,8 @@ if __name__ == '__main__':
         'message_handler' : functools.partial(process_message, args=args)
     }
     if args.lookupd_http_address:
-        kwargs['lookupd_http_addresses'] = args.lookupd_http_address
+        addresses = [a if a.startswith("http") else "http://%s" % a for a in args.lookupd_http_address]
+        kwargs['lookupd_http_addresses'] = addresses
     else:
         kwargs['nsqd_tcp_addresses'] = args.nsqd_tcp_address
     r = nsq.Reader(**kwargs)
