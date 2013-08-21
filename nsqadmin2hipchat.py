@@ -26,14 +26,15 @@ action_text_map = {
     'delete_channel' : 'Deleted',
     'empty_channel' : 'Emptied',
     'pause_channel' : 'Paused',
-    'unpause_channel' : 'Unpaused'
+    'unpause_channel' : 'Unpaused',
+    'tombstone_topic_producer': 'Tombstoned Topic Producer',
 }
 def text_from_nsq_body(body):
     try:
         event = json.loads(body)
         topic_txt = 'topic %s' % event['topic']
         channel_txt = 'channel %s in ' % event['channel'] if event['channel'] else ''
-        return action_text_map[event['action']] + " " + channel_txt + topic_txt, event['user']
+        return action_text_map.get(event['action'], event['action']) + " " + channel_txt + topic_txt, event['user']
     except ValueError:
         logging.exception("Invalid json from nsq")
 
