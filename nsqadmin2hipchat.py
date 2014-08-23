@@ -33,7 +33,7 @@ def text_from_nsq_body(body):
     try:
         event = json.loads(body)
         topic_txt = 'topic %s' % event['topic']
-        channel_txt = 'channel %s in ' % event['channel'] if event['channel'] else ''
+        channel_txt = 'channel %s in ' % event.get('channel') if event.get('channel') else ''
         return action_text_map.get(event['action'], event['action']) + " " + channel_txt + topic_txt, event['user']
     except ValueError:
         logging.exception("Invalid json from nsq")
