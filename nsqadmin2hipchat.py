@@ -7,6 +7,7 @@ import nsq
 import argparse
 import functools
 
+
 def post_to_hipchat(txt, args, user):
     params = {
         'auth_token' : args.hipchat_auth_token,
@@ -19,22 +20,33 @@ def post_to_hipchat(txt, args, user):
     url = "https://api.hipchat.com/v1/rooms/message"
     return urllib.urlopen(url + '?' + urllib.urlencode(params))
 
+
 action_text_map = {
-    'create_topic' : 'Created',
-    'create_channel' : 'Created',
-    'delete_topic' : 'Deleted',
-    'delete_channel' : 'Deleted',
-    'empty_channel' : 'Emptied',
-    'pause_channel' : 'Paused',
-    'unpause_channel' : 'Unpaused',
+    'create_topic' : 'Created topic',
+    'create_channel' : 'Created channel',
+    'delete_topic' : 'Deleted topic',
+    'delete_channel' : 'Deleted channel',
+    'empty_channel' : 'Emptied channel',
+    'empty_topic' : 'Emptied topic',
+    'pause_channel' : 'Paused channel',
+    'unpause_channel' : 'Unpaused channel',
+    'pause_topic' : 'Paused topic',
+    'unpause_topic' : 'Unpaused topic',
     'tombstone_topic_producer': 'Tombstoned Topic Producer',
 }
+
+
 def text_from_nsq_body(body):
     try:
         event = json.loads(body)
-        topic_txt = 'topic %s' % event['topic']
-        channel_txt = 'channel %s in ' % event.get('channel') if event.get('channel') else ''
-        return action_text_map.get(event['action'], event['action']) + " " + channel_txt + topic_txt, event['user']
+        topic_txt = event.get('topic', '')
+        channel_txt = event.get('channel', '')
+        if channel_txt:
+            return action_text_map.get(event['action'], event['action']) + " " + channel_txt +\
+                " in topic " + topic_txt, event.get('user', 'unknown user')
+        else:
+            return action_text_map.get(event['action'], event['action']) + " " + topic_txt,\
+                event.get('user', 'unknown user')
     except ValueError:
         logging.exception("Invalid json from nsq")
 
